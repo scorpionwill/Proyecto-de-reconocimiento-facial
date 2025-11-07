@@ -1,6 +1,7 @@
 # views.py
 import cv2
 import os
+import time
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from .models import Asistencia, Usuario, Evento
@@ -196,6 +197,10 @@ def reconocer_usuario(request, evento_id=None):
         if not evento:
             return HttpResponse("No hay eventos activos disponibles", status=400)
 
+    last_recognized_id = None
+    recognition_start_time = None
+    CONFIRMATION_TIME = 2  # seconds
+
     while True:
         ret, frame = cam.read()
         if not ret:
@@ -204,31 +209,68 @@ def reconocer_usuario(request, evento_id=None):
         gris = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         rostros = detector.detectMultiScale(gris, 1.3, 5)
 
+        if len(rostros) == 0:
+            last_recognized_id = None
+            recognition_start_time = None
+
         for (x, y, w, h) in rostros:
             rostro = gris[y:y+h, x:x+w]
             label, confianza = recognizer.predict(rostro)
 
-            if confianza < 50:  # Ajusta este umbral según el rendimiento
+            if confianza < 40:
                 usuario = Usuario.objects.get(id=label)
 
-                # Verificar si el usuario ya está registrado para el evento
-                if not Asistencia.objects.filter(usuario=usuario, evento_asist_id=evento.id).exists():
-                    # Registrar asistencia
-                    Asistencia.objects.create(usuario=usuario, evento_asist_id=evento.id)
-                    usuarios_registrados.add(usuario.id)  # Agregar usuario al set
+                # Check if user is already registered BEFORE starting confirmation
+                if Asistencia.objects.filter(usuario=usuario, evento_asist_id=evento.id).exists():
+                    texto = f"{usuario.nombre} ya registrado"
+                    color = (255, 255, 0)  # Yellow for already registered
+                    last_recognized_id = None # Reset confirmation
+                    recognition_start_time = None
 
-                    texto = f"Usuario {usuario.nombre} registrado en {evento.nom_evento}"
-                    color = (0, 255, 0)  # Verde para usuarios reconocidos
+                # If not registered, proceed with confirmation logic
                 else:
-                    texto = f"{usuario.nombre} ya registrado en {evento.nom_evento}"
-                    color = (255, 255, 0)  # Amarillo si ya está registrado
+                    if last_recognized_id == label:
+                        elapsed_time = time.time() - recognition_start_time
+                        
+                        # Draw progress bar
+                        progress = int((elapsed_time / CONFIRMATION_TIME) * 100)
+                        cv2.rectangle(frame, (x, y + h + 5), (x + w, y + h + 15), (200, 200, 200), -1)
+                        cv2.rectangle(frame, (x, y + h + 5), (x + int(w * (progress / 100)), y + h + 15), (0, 255, 0), -1)
 
-            else:
+                        if elapsed_time >= CONFIRMATION_TIME:
+                            # The check is repeated here, but it's fine.
+                            # It ensures that in a race condition, we don't register twice.
+                            if not Asistencia.objects.filter(usuario=usuario, evento_asist_id=evento.id).exists():
+                                Asistencia.objects.create(usuario=usuario, evento_asist_id=evento.id)
+                                usuarios_registrados.add(usuario.id)
+                                texto = f"Usuario {usuario.nombre} registrado"
+                                color = (0, 255, 0)
+                            else: # Should be rare to hit this else
+                                texto = f"{usuario.nombre} ya registrado"
+                                color = (255, 255, 0)
+                            
+                            # Reset after registration
+                            last_recognized_id = None
+                            recognition_start_time = None
+
+                        else:
+                            texto = f"Confirmando a {usuario.nombre}..."
+                            color = (0, 255, 255) # Yellowish for confirming
+
+                    else: # New face recognized for confirmation
+                        last_recognized_id = label
+                        recognition_start_time = time.time()
+                        texto = f"Reconociendo a {usuario.nombre}"
+                        color = (0, 255, 255)
+
+            else: # Unknown face
+                last_recognized_id = None
+                recognition_start_time = None
                 texto = "Desconocido"
-                color = (0, 0, 255)  # Rojo para desconocidos
+                color = (0, 0, 255)
 
             cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
-            cv2.putText(frame, texto, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+            cv2.putText(frame, texto, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
 
         cv2.imshow("Reconocimiento Facial - presione 'q' para salir", frame)
 
