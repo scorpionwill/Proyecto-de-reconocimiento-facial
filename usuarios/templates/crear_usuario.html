@@ -1,0 +1,156 @@
+{% load static %} <!-- Cargar el tag de static -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <title>Registrar Usuario</title>
+
+</head>
+<body>
+    <div class="container">
+        <h1>Registrar Nuevo Usuario</h1>
+    
+        {% if error %}
+            <div class="alert alert-danger text-center">
+                {{ error }}
+            </div>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="mb-3 row">
+                <div class="col-md-8">
+                    <label for="rut_numeros" class="form-label">RUT (sin dígito verificador):</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="rut_numeros" name="rut_numeros" maxlength="8" placeholder="Ejemplo: 12345678" required>
+                        <span class="input-group-text" id="rutStatusIcon">✖</span>
+                    </div>
+                    <div id="rutNumerosFeedback" class="invalid-feedback">
+                        El RUT ingresado no es válido.
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="rut_dv" class="form-label">DV:</label>
+                    <input type="text" class="form-control" id="rut_dv" name="rut_dv" readonly placeholder="DV">
+                </div>
+            </div>
+            
+            
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre Completo:</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ingrese su nombre completo" required>
+                    <span class="input-group-text" id="nombreStatusIcon">✖</span>
+                </div>
+                <div id="nombreFeedback" class="invalid-feedback">
+                    El nombre no puede contener números.
+                </div>
+            </div>
+              
+            <div class="mb-3">
+                <label for="carrera" class="form-label">Carrera:</label>
+                <select class="form-select" id="carrera" name="carrera" required>
+                    <option value="" disabled selected>Seleccione su carrera</option>
+                    <option value="Gastronomía">Gastronomía</option>
+                    <option value="Mecánica">Mecánica</option>
+                    <option value="Ingeniería en informática">Ingeniería en informática</option>
+                    <option value="Diseño gráfico profesional">Diseño gráfico profesional</option>
+                    <option value="Administración de empresa">Administración de empresa</option>
+                </select>
+            </div>
+            
+            <div class="text-center">
+                <button type="submit" class="btn w-100 py-2">Crear Usuario</button>
+                <a href="{% url 'pagina_inicio' %}" class="btn back-btn w-100 py-2 my-3">Volver a lista Usuario</a> 
+            </div>
+
+        </form>
+        
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validar el RUT completo
+        function validarRutCompleto(rutNumeros, rutDV) {
+            if (!rutNumeros || rutNumeros.length < 7 || isNaN(rutNumeros) || rutDV === "") {
+                return false;
+            }
+    
+            let suma = 0;
+            let multiplicador = 2;
+    
+            for (let i = rutNumeros.length - 1; i >= 0; i--) {
+                suma += parseInt(rutNumeros[i]) * multiplicador;
+                multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+            }
+    
+            const resto = suma % 11;
+            const dvEsperado = 11 - resto === 11 ? "0" : 11 - resto === 10 ? "k" : (11 - resto).toString();
+    
+            return dvEsperado.toLowerCase() === rutDV.toLowerCase();
+        }
+    
+        // Calcular el DV automáticamente y validar
+        document.getElementById("rut_numeros").addEventListener("input", function () {
+            const rutNumeros = this.value.replace(/\D/g, ""); // Limpiar caracteres no numéricos
+            this.value = rutNumeros.slice(0, 8); // Limitar a 8 caracteres
+            const rutDV = document.getElementById("rut_dv");
+            const rutStatusIcon = document.getElementById("rutStatusIcon");
+    
+            if (!rutNumeros || rutNumeros.length < 7) {
+                rutDV.value = ""; // Limpiar el DV si no hay RUT válido o es muy corto
+                rutStatusIcon.textContent = "✖";
+                rutStatusIcon.style.color = "red";
+                return;
+            }
+    
+            let suma = 0;
+            let multiplicador = 2;
+    
+            for (let i = rutNumeros.length - 1; i >= 0; i--) {
+                suma += parseInt(rutNumeros[i]) * multiplicador;
+                multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+            }
+    
+            const resto = suma % 11;
+            const dv = 11 - resto;
+    
+            rutDV.value = dv === 11 ? "0" : dv === 10 ? "K" : dv.toString();
+    
+            if (validarRutCompleto(rutNumeros, rutDV.value)) {
+                rutStatusIcon.textContent = "✔";
+                rutStatusIcon.style.color = "green";
+            } else {
+                rutStatusIcon.textContent = "✖";
+                rutStatusIcon.style.color = "red";
+            }
+        });
+    
+        // Validar Nombre
+        function validarNombre(nombre) {
+            const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+            return regex.test(nombre);
+        }
+    
+        // Validar Nombre en tiempo real
+        document.getElementById("nombre").addEventListener("input", function () {
+            const nombre = this.value;
+            const nombreStatusIcon = document.getElementById("nombreStatusIcon");
+    
+            if (validarNombre(nombre)) {
+                nombreStatusIcon.textContent = "✔";
+                nombreStatusIcon.style.color = "green";
+            } else {
+                nombreStatusIcon.textContent = "✖";
+                nombreStatusIcon.style.color = "red";
+            }
+        });
+    </script>
+    
+</body>
+
+</html>

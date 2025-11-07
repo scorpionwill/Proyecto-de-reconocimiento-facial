@@ -1,0 +1,93 @@
+{% load static %} <!-- Cargar el tag de static -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-dark text-white p-3" id="sidebar-wrapper" style="min-width: 250px;">
+            <h2 class="text-center d-flex align-items-center justify-content-center">
+                <a href="{% url 'pagina_inicio' %}">
+                    <img src="/static/images/inacap.jpeg" style="width: 40px; height: 40px;" class="me-2">
+                </a>
+                Admin Panel
+            </h2>
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="{% url 'listar_usuarios' %}">
+                        <i class="bi bi-person"></i> Lista de Usuarios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="{% url 'listar_asistencias' %}">
+                        <i class="bi bi-calendar-check"></i> Lista de Asistencia
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="{% url 'listar_eventos' %}">
+                        <i class="bi bi-calendar-event"></i> Lista de Eventos
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper" class="flex-grow-1 p-4 bg-light">
+            <div class="container-fluid">
+                <h1 class="mb-4">Bienvenido al Sistema de Reconocimiento Facial</h1>
+                <p class="lead">Utilice las opciones del menú para navegar por el sistema.</p>
+                
+                
+                <!-- Botones de "Entrenar Modelo" y "Reconocer Usuario" -->
+                <div class="mt-4">
+                    <a href="{% url 'entrenar_modelo' %}" class="btn btn-primary btn-lg mb-3">
+                        <i class="bi bi-bar-chart"></i> Entrenar Modelo
+                    </a>
+
+                    {% if evento %}
+                        <a href="{% url 'reconocer_usuario' evento_id=evento.id %}" class="btn btn-success btn-lg mb-3">
+                            <i class="bi bi-person-check"></i> Reconocer Usuario
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary btn-lg mb-3" disabled>
+                            <i class="bi bi-person-check"></i> (No hay evento activo)
+                        </button>
+                    {% endif %}
+
+                    <div class="card border-primary mt-4 shadow">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-calendar-event"></i> Evento en Curso
+    </div>
+    <div class="card-body">
+        <p class="card-text fs-5 text-secondary">
+            {% if evento %}
+                El evento <strong>{{ evento.nom_evento }}</strong> está en curso.
+            {% else %}
+                No hay ningún evento activo en este momento.
+            {% endif %}
+        </p>
+    </div>
+</div>
+                    
+                                       
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

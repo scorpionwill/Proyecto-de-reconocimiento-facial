@@ -1,0 +1,1 @@
+pip install opencv-python opencv-python-headless mysql-connector-python opencv-contrib-python django cryptography
