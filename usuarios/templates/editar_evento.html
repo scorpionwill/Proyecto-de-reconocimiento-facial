@@ -1,3 +1,4 @@
+<!-- Carga las etiquetas de plantillas estáticas de Django -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
@@ -5,44 +6,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Evento</title>
+    <!-- Enlaces a Bootstrap y a la hoja de estilos personalizada -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-
 </head>
 <body>
     <div class="container">
         <h1>Editar Evento</h1>
     
+        <!-- Muestra un mensaje de error si es necesario -->
         {% if error %}
             <div class="alert alert-danger text-center">
                 {{ error }}
             </div>
         {% endif %}
         
+        <!-- Formulario para editar un evento existente. Los datos se envían con el método POST. -->
         <form method="POST">
+            <!-- Token de seguridad CSRF -->
             {% csrf_token %}
+            <!-- Campo oculto que contiene el ID del evento para identificarlo en el servidor -->
             <input type="hidden" name="id" value="{{ evento.id }}">
             
+            <!-- Campo para el nombre del evento, pre-rellenado con el valor actual -->
             <div class="mb-3">
                 <label for="nom_evento" class="form-label">Nombre del Evento:</label>
                 <input type="text" class="form-control" id="nom_evento" name="nom_evento" value="{{ evento.nom_evento }}" required>
             </div>
 
+            <!-- Campo para la fecha, pre-rellenado con la fecha actual del evento -->
+            <!-- El filtro 'date:"Y-m-d"' formatea la fecha para que sea compatible con el input de tipo 'date' -->
             <div class="mb-3">
                 <label for="fecha" class="form-label">Fecha:</label>
                 <input type="date" class="form-control" id="fecha" name="fecha" value="{{ evento.fecha|date:'Y-m-d' }}" required>
             </div>
 
+            <!-- Campo para el relator, pre-rellenado con el valor actual -->
             <div class="mb-3">
                 <label for="relator" class="form-label">Relator:</label>
                 <input type="text" class="form-control" id="relator" name="relator" value="{{ evento.relator }}" required>
             </div>
 
+            <!-- Campo para la descripción, pre-rellenado con el valor actual -->
             <div class="mb-3">
                 <label for="descripcion" class="form-label">Descripción:</label>
                 <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required>{{ evento.descripcion }}</textarea>
             </div>
 
+            <!-- Menú desplegable para el estado, con la opción actual seleccionada -->
             <div class="mb-3">
                 <label for="estado" class="form-label">Estado:</label>
                 <select class="form-select" id="estado" name="estado" required>
@@ -51,13 +62,17 @@
                 </select>
             </div>
 
+            <!-- Botones de acción -->
             <div class="text-center">
+                <!-- Botón para guardar los cambios -->
                 <button type="submit" class="btn w-100 py-2">Actualizar Evento</button>
-                <a href="{% url 'listar_eventos' %}" class="btn back-btn w-100 py-2 my-3">Volver a la Lista de Eventos</a> <!-- Botón para volver -->
+                <!-- Enlace para volver a la lista de eventos sin guardar -->
+                <a href="{% url 'listar_eventos' %}" class="btn back-btn w-100 py-2 my-3">Volver a la Lista de Eventos</a>
             </div>
         </form>
     </div>
     
+    <!-- Script de Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+<!-- Carga las etiquetas de plantillas estáticas de Django -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
@@ -5,44 +6,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Usuario</title>
+    <!-- Enlaces a Bootstrap y a la hoja de estilos personalizada -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
-
 </head>
 <body>
     <div class="container">
         <h1>Editar Usuario</h1>
     
+        <!-- Muestra un mensaje de error si es necesario -->
         {% if error %}
             <div class="alert alert-danger text-center">
                 {{ error }}
             </div>
         {% endif %}
         
+        <!-- Formulario para editar un usuario existente -->
         <form method="POST">
+            <!-- Token de seguridad CSRF -->
             {% csrf_token %}
+            
+            <!-- Campo para el RUT. Es de solo lectura ('readonly') para evitar que se modifique. -->
             <div class="mb-3">
                 <label for="rut" class="form-label">RUT:</label>
                 <input type="text" class="form-control text-muted" id="rut" value="{{ usuario.rut }}" readonly>
             </div>            
 
+            <!-- Campo para el nombre del usuario, pre-rellenado con el valor actual -->
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre:</label>
                 <input type="text" class="form-control" id="nombre" name="nombre" value="{{ usuario.nombre }}" required>
             </div>
 
+            <!-- Menú desplegable para la carrera, con la opción actual seleccionada -->
             <div class="mb-3">
                 <label for="carrera" class="form-label">Carrera:</label>
                 <select class="form-select" id="carrera" name="carrera" required>
-                    <option value="" disabled selected>Seleccione su carrera</option>
-                    <option value="Gastronomía">Gastronomía</option>
-                    <option value="Mecánica">Mecánica</option>
-                    <option value="Ingeniería en informática">Ingeniería en informática</option>
-                    <option value="Diseño gráfico profesional">Diseño gráfico profesional</option>
-                    <option value="Administración de empresa">Administración de empresa</option>
+                    <option value="" disabled>Seleccione su carrera</option>
+                    <option value="Gastronomía" {% if usuario.carrera == "Gastronomía" %}selected{% endif %}>Gastronomía</option>
+                    <option value="Mecánica" {% if usuario.carrera == "Mecánica" %}selected{% endif %}>Mecánica</option>
+                    <option value="Ingeniería en informática" {% if usuario.carrera == "Ingeniería en informática" %}selected{% endif %}>Ingeniería en informática</option>
+                    <option value="Diseño gráfico profesional" {% if usuario.carrera == "Diseño gráfico profesional" %}selected{% endif %}>Diseño gráfico profesional</option>
+                    <option value="Administración de empresa" {% if usuario.carrera == "Administración de empresa" %}selected{% endif %}>Administración de empresa</option>
                 </select>
             </div>
 
+            <!-- Botones de acción -->
             <div class="text-center">
                 <button type="submit" class="btn w-100 py-2">Actualizar Usuario</button>
                 <a href="{% url 'listar_usuarios' %}" class="btn back-btn w-100 py-2 my-3">Volver a la Lista de Usuarios</a>
@@ -50,32 +59,38 @@
         </form>
     </div>
     
+    <!-- Script de Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
+<!-- Script para dar formato visual al RUT (añadir puntos y guion) -->
 <script>
+    // Función que formatea el valor de un input de RUT
     function formatRut(rutInput) {
-        let value = rutInput.value.replace(/[^0-9kK]/g, ''); // Eliminar caracteres no válidos
-        let cuerpo = value.slice(0, -1); // Todo menos el dígito verificador
-        let dv = value.slice(-1); // Dígito verificador
+        // Elimina cualquier caracter que no sea un número o la letra 'k'
+        let value = rutInput.value.replace(/[^0-9kK]/g, '');
+        if (value.length === 0) return; // No hace nada si el campo está vacío
+
+        // Separa el cuerpo del RUT y el dígito verificador
+        let cuerpo = value.slice(0, -1);
+        let dv = value.slice(-1);
         
-        // Aplicar puntos cada tres dígitos y guion antes del dígito verificador
+        // Añade los puntos como separadores de miles al cuerpo del RUT
         cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        rutInput.value = cuerpo + (dv ? `-${dv}` : '');
+        
+        // Recompone el RUT con el formato "xx.xxx.xxx-y"
+        rutInput.value = cuerpo + '-' + dv;
     }
 
-    // Detectar cambios y aplicar formato
+    // Se asegura de que el DOM esté completamente cargado antes de ejecutar el script
     document.addEventListener('DOMContentLoaded', function () {
         const rutField = document.getElementById('rut');
         if (rutField) {
-            // Formatear al cargar si ya tiene valor
+            // Formatea el RUT inicial que viene del servidor al cargar la página
             formatRut(rutField);
-
-            // Formatear al escribir
-            rutField.addEventListener('input', function () {
-                formatRut(this);
-            });
+            // El campo es 'readonly', por lo que no se necesita un listener de 'input'.
+            // Si el campo fuera editable, se añadiría un listener como en 'crear_usuario.html'.
         }
     });
 </script>
-
 </html>

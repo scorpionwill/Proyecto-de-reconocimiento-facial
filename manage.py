@@ -1,19 +1,23 @@
-#!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
+"""!/usr/bin/env python
+Este archivo, manage.py, es una utilidad de línea de comandos que te permite 
+interactuar con tu proyecto de Django. 
+Lo usas para ejecutar tareas administrativas como iniciar el servidor de desarrollo, 
+crear migraciones de base de datos y ejecutar pruebas."""
+"""Utilidad de línea de comandos de Django para tareas administrativas."""
 import os
 import sys
 
 
 def main():
-    """Run administrative tasks."""
+    """Ejecutar tareas administrativas."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'reconocimiento_facial.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
         raise ImportError(
-            "Couldn't import Django. Are you sure it's installed and "
-            "available on your PYTHONPATH environment variable? Did you "
-            "forget to activate a virtual environment?"
+            "No se pudo importar Django. ¿Estás seguro de que está instalado y "
+            "disponible en tu variable de entorno PYTHONPATH? ¿Olvidaste "
+            "activar un entorno virtual?"
         ) from exc
     execute_from_command_line(sys.argv)
 

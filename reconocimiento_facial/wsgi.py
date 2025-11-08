@@ -1,9 +1,12 @@
+"""es el punto de entrada para los servidores web compatibles con WSGI 
+(Web Server Gateway Interface). WSGI es el estándar para las aplicaciones 
+web de Python y permite que tu proyecto Django se comunique con el servidor web."""
 """
-WSGI config for reconocimiento_facial project.
+Configuración de WSGI para el proyecto reconocimiento_facial.
 
-It exposes the WSGI callable as a module-level variable named ``application``.
+Expone el llamable WSGI como una variable a nivel de módulo llamada ``application``.
 
-For more information on this file, see
+Para más información sobre este archivo, vea
 https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/
 """
 

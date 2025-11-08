@@ -1,9 +1,14 @@
+"""Es el punto de entrada para los servidores web compatibles con ASGI 
+(Asynchronous Server Gateway Interface). ASGI es el sucesor de WSGI y 
+permite que tu proyecto Django sea servido de forma asíncrona, lo cual es 
+útil para aplicaciones que manejan muchas conexiones simultáneas o de larga duración."""
+
 """
-ASGI config for reconocimiento_facial project.
+Configuración de ASGI para el proyecto reconocimiento_facial.
 
-It exposes the ASGI callable as a module-level variable named ``application``.
+Expone el llamable ASGI como una variable a nivel de módulo llamada ``application``.
 
-For more information on this file, see
+Para más información sobre este archivo, vea
 https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
 """
 
