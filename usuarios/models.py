@@ -18,6 +18,7 @@ class Usuario(models.Model):
     def __str__(self):
         return self.nombre
 
+from datetime import date
 # Define el modelo para la tabla 'Evento' en la base de datos.
 # Cada instancia de esta clase representa un evento.
 class Evento(models.Model):
@@ -31,8 +32,30 @@ class Evento(models.Model):
     descripcion = models.CharField(max_length=255, blank=True, null=True)
     # Campo para el nombre del relator del evento, puede estar en blanco o ser nulo.
     relator = models.CharField(max_length=60, blank=True, null=True)
-    # Campo booleano para indicar el estado del evento (por ejemplo, activo o inactivo).
-    estado = models.BooleanField()
+    # Opciones para el campo 'estado'
+    ESTADO_CHOICES = (
+        (1, 'Próximo'),
+        (2, 'Activo'),
+        (3, 'Finalizado'),
+    )
+    # Campo para el estado del evento, con valor por defecto 'Próximo'.
+    estado = models.IntegerField(choices=ESTADO_CHOICES, default=1)
+
+    # Sobrescribe el método save para actualizar el estado automáticamente.
+    def save(self, *args, **kwargs):
+        hoy = date.today()
+        if self.fecha < hoy:
+            self.estado = 3
+        elif self.fecha == hoy:
+            self.estado = 2
+        else:
+            self.estado = 1
+        super(Evento, self).save(*args, **kwargs)
+
+    @property
+    def is_active(self):
+        """Devuelve True si el evento está activo."""
+        return self.estado == 'Activo'
 
     # Método que devuelve el nombre del evento como su representación en cadena.
     def __str__(self):

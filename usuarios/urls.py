@@ -36,7 +36,4 @@ urlpatterns = [
     
     # URL para iniciar el reconocimiento facial y registrar la asistencia a un evento específico.
     path('reconocer_usuario/<int:evento_id>/', views.reconocer_usuario, name='reconocer_usuario'),
-    
-    # URL para cambiar el estado (activo/inactivo) de un evento.
-    path('evento/cambiar_estado/<int:evento_id>/', views.cambiar_estado_evento, name='cambiar_estado_evento'),
 ]
