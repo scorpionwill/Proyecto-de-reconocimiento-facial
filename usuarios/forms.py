@@ -18,6 +18,10 @@ class EventoForm(forms.ModelForm):
         model = Evento
         # Define los campos del modelo que se mostrarán en el formulario.
         fields = ['nom_evento', 'fecha', 'relator', 'descripcion']
+        
+        labels = {
+            'nom_evento': 'Nombre del Evento',
+        }
 
         # 'widgets' permite personalizar cómo se renderizan los campos del formulario en HTML.
         widgets = {
