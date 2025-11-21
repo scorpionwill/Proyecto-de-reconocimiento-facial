@@ -25,41 +25,22 @@
         <form method="POST">
             <!-- Token de seguridad CSRF -->
             {% csrf_token %}
-            <!-- Campo oculto que contiene el ID del evento para identificarlo en el servidor -->
-            <input type="hidden" name="id" value="{{ evento.id }}">
             
-            <!-- Campo para el nombre del evento, pre-rellenado con el valor actual -->
             <div class="mb-3">
-                <label for="nom_evento" class="form-label">Nombre del Evento:</label>
-                <input type="text" class="form-control" id="nom_evento" name="nom_evento" value="{{ evento.nom_evento }}" required>
+                {{ form.nom_evento.label_tag }}
+                {{ form.nom_evento }}
             </div>
-
-            <!-- Campo para la fecha, pre-rellenado con la fecha actual del evento -->
-            <!-- El filtro 'date:"Y-m-d"' formatea la fecha para que sea compatible con el input de tipo 'date' -->
             <div class="mb-3">
-                <label for="fecha" class="form-label">Fecha:</label>
-                <input type="date" class="form-control" id="fecha" name="fecha" value="{{ evento.fecha|date:'Y-m-d' }}" required>
+                {{ form.fecha.label_tag }}
+                {{ form.fecha }}
             </div>
-
-            <!-- Campo para el relator, pre-rellenado con el valor actual -->
             <div class="mb-3">
-                <label for="relator" class="form-label">Relator:</label>
-                <input type="text" class="form-control" id="relator" name="relator" value="{{ evento.relator }}" required>
+                {{ form.relator.label_tag }}
+                {{ form.relator }}
             </div>
-
-            <!-- Campo para la descripción, pre-rellenado con el valor actual -->
             <div class="mb-3">
-                <label for="descripcion" class="form-label">Descripción:</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required>{{ evento.descripcion }}</textarea>
-            </div>
-
-            <!-- Menú desplegable para el estado, con la opción actual seleccionada -->
-            <div class="mb-3">
-                <label for="estado" class="form-label">Estado:</label>
-                <select class="form-select" id="estado" name="estado" required>
-                    <option value="True" {% if evento.estado == True %}selected{% endif %}>Activo</option>
-                    <option value="False" {% if evento.estado == False %}selected{% endif %}>Inactivo</option>
-                </select>
+                {{ form.descripcion.label_tag }}
+                {{ form.descripcion }}
             </div>
 
             <!-- Botones de acción -->

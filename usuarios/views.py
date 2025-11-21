@@ -14,12 +14,10 @@ from datetime import date  # Para trabajar con fechas
 # Vista para la página de inicio
 def pagina_inicio(request):
     # Busca en la base de datos el evento más reciente que esté marcado como 'activo'
-    evento = Evento.objects.filter(estado=True).order_by('-fecha').first()
-    # Obtiene la fecha actual
-    hoy = date.today()
+    evento = Evento.objects.filter(fecha=date.today()).order_by('-fecha').first()
     
-    # Comprueba si hay un evento activo y si su fecha es la de hoy
-    if evento and evento.fecha == hoy:
+    # Comprueba si hay un evento activo
+    if evento:
         mensaje_evento = f"El evento '{evento.nom_evento}' está en curso."
     else:
         mensaje_evento = "No hay ningún evento activo en este momento."
@@ -233,11 +231,11 @@ def reconocer_usuario(request, evento_id=None):
             return HttpResponse("Evento no encontrado", status=404)
         
         # Comprueba si el evento está activo
-        if not evento.estado:
+        if not evento.is_active:
             return HttpResponse(f"El evento '{evento.nom_evento}' no está activo", status=400)
     else:
         # Si no se proporciona un ID, busca el evento activo más reciente
-        evento = Evento.objects.filter(estado=True).order_by('-fecha').first()
+        evento = Evento.objects.filter(fecha=date.today()).order_by('-fecha').first()
 
         # Si no hay ningún evento activo
         if not evento:
@@ -353,10 +351,23 @@ def listar_asistencias(request):
 
 # Vista para listar todos los eventos
 def listar_eventos(request):
-    # Obtiene todos los eventos, ordenados por fecha
-    eventos = Evento.objects.all().order_by('fecha')
-    # Renderiza la plantilla y le pasa la lista de eventos
-    return render(request, 'listar_eventos.html', {'eventos': eventos})
+    # Obtiene el parámetro de filtro de la URL, si no existe, usa 'todos'
+    filtro = request.GET.get('filtro', 'todos')
+    hoy = date.today()
+
+    # Filtra los eventos según el parámetro
+    if filtro == 'activos':
+        eventos = Evento.objects.filter(fecha=hoy).order_by('fecha')
+    elif filtro == 'finalizados':
+        eventos = Evento.objects.filter(fecha__lt=hoy).order_by('-fecha')
+    elif filtro == 'proximos':
+        eventos = Evento.objects.filter(fecha__gt=hoy).order_by('fecha')
+    else:
+        # Si el filtro es 'todos' o no se especifica, obtiene todos los eventos
+        eventos = Evento.objects.all().order_by('fecha')
+
+    # Renderiza la plantilla y le pasa la lista de eventos y el filtro actual
+    return render(request, 'listar_eventos.html', {'eventos': eventos, 'filtro_actual': filtro})
 
 # Vista para crear un nuevo evento
 def crear_evento(request):
@@ -384,34 +395,20 @@ def editar_evento(request, evento_id):
 
     # Si el formulario de edición se ha enviado
     if request.method == 'POST':
-        # Actualiza los campos del evento con los datos del formulario
-        evento.nom_evento = request.POST.get('nom_evento')
-        evento.fecha = request.POST.get('fecha')
-        evento.relator = request.POST.get('relator')
-        evento.descripcion = request.POST.get('descripcion')
-        # Convierte el valor del checkbox ('True'/'False') a un booleano
-        evento.estado = request.POST.get('estado') == 'True'
-        # Guarda los cambios
-        evento.save()
+        # Crea una instancia del formulario con los datos enviados y la instancia del evento
+        form = EventoForm(request.POST, instance=evento)
+        # Si el formulario es válido
+        if form.is_valid():
+            # Guarda los cambios
+            form.save()
+            # Redirige a la lista de eventos
+            return redirect('listar_eventos')
+    else:
+        # Si es una petición GET, crea un formulario con los datos actuales del evento
+        form = EventoForm(instance=evento)
 
-        # Redirige a la lista de eventos
-        return redirect('listar_eventos')
-
-    # Si es una petición GET, muestra el formulario con los datos actuales del evento
-    return render(request, 'editar_evento.html', {'evento': evento})
-
-# Vista para cambiar el estado de un evento (activo/inactivo)
-def cambiar_estado_evento(request, evento_id):
-    # Solo permite la operación si es una petición POST
-    if request.method == "POST":
-        # Obtiene el evento por su ID
-        evento = get_object_or_404(Evento, id=evento_id)
-        # Invierte el estado actual (si es True lo pone en False, y viceversa)
-        evento.estado = not evento.estado
-        # Guarda el cambio
-        evento.save()
-    # Redirige a la lista de eventos
-    return redirect('listar_eventos')
+    # Renderiza la plantilla para editar evento y le pasa el formulario
+    return render(request, 'editar_evento.html', {'form': form, 'evento': evento})
 
 # --- Funciones de Encriptación ---
 from cryptography.fernet import Fernet  # Librería para encriptación simétrica
@@ -458,7 +455,7 @@ def desencriptar_imagen(path_imagen):
     with open(path_imagen, "rb") as file:
         datos_encriptados = file.read()
     # Desencripta los datos
-    datos_desencriptados = fernet.decrypt(datos_encriptados)
+    datos_desencriptados = fernet.decrypt(datos_desencriptados)
     # Abre el archivo en modo de escritura binaria (sobrescribe el encriptado)
     with open(path_imagen, "wb") as file:
         # Escribe los datos desencriptados

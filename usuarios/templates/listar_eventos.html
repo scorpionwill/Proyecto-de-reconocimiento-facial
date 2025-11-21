@@ -47,8 +47,14 @@
             <div class="container-fluid">
                 <h1 class="mb-4">Lista de Eventos</h1>
 
-                <!-- Botón para navegar a la página de creación de un nuevo evento -->
-                <div class="text-end mb-3">
+                <!-- Botones de filtro -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'listar_eventos' %}?filtro=todos" class="btn {% if filtro_actual == 'todos' %}btn-primary{% else %}btn-outline-primary{% endif %}">Todos</a>
+                        <a href="{% url 'listar_eventos' %}?filtro=activos" class="btn {% if filtro_actual == 'activos' %}btn-primary{% else %}btn-outline-primary{% endif %}">Activos</a>
+                        <a href="{% url 'listar_eventos' %}?filtro=proximos" class="btn {% if filtro_actual == 'proximos' %}btn-primary{% else %}btn-outline-primary{% endif %}">Próximos</a>
+                        <a href="{% url 'listar_eventos' %}?filtro=finalizados" class="btn {% if filtro_actual == 'finalizados' %}btn-primary{% else %}btn-outline-primary{% endif %}">Finalizados</a>
+                    </div>
                     <a href="{% url 'crear_evento' %}" class="btn btn-primary">
                         Crear Evento
                     </a>
@@ -70,23 +76,12 @@
                                     <p><strong>Descripción:</strong> {{ evento.descripcion }}</p>
                                     <p><strong>Estado:</strong> 
                                         <!-- Muestra una insignia de color según el estado del evento -->
-                                        {% if evento.estado %} 
-                                            <span class="badge bg-success">Activo</span> 
-                                        {% else %} 
-                                            <span class="badge bg-danger">Inactivo</span> 
-                                        {% endif %}
+                                        <span class="badge {% if evento.get_estado_display == 'Activo' %}bg-success{% elif evento.get_estado_display == 'Próximo' %}bg-secondary{% else %}bg-danger{% endif %}">
+                                            {{ evento.get_estado_display }}
+                                        </span>
                                     </p>
                                     <!-- Enlace para editar el evento -->
                                     <a href="{% url 'editar_evento' evento.id %}" class="btn btn-secondary">Editar Evento</a>
-                                    
-                                    <!-- Formulario para cambiar el estado del evento (Activar/Desactivar) -->
-                                    <form action="{% url 'cambiar_estado_evento' evento.id %}" method="POST" class="d-inline">
-                                        {% csrf_token %}
-                                        <!-- El texto y color del botón cambian según el estado actual -->
-                                        <button type="submit" class="btn {% if evento.estado %}btn-danger{% else %}btn-success{% endif %}">
-                                            {% if evento.estado %} Desactivar {% else %} Activar {% endif %}
-                                        </button>
-                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -95,7 +90,7 @@
                 {% else %}
                 <!-- Si no hay eventos, muestra un mensaje informativo -->
                 <div class="alert alert-info mt-3" role="alert">
-                    <p>No hay eventos disponibles en este momento.</p>
+                    <p>No se han encontrado Eventos.</p>
                 </div>
                 {% endif %}
             </div>
